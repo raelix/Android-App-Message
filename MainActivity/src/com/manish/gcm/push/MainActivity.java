@@ -7,15 +7,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -28,6 +25,8 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -41,13 +40,20 @@ public static Context myContext;
 	private String TAG = "** GCMPushDEMOAndroid**";
 	public static TextView mDisplay;
 	public static EditText name;
+	public static EditText destinatario;
+	public static EditText messaggio;
+	Button inviaMessaggio;
 	String regId = "";
 	Button register;
+	WebView webView;
+	 WebSettings settings;
+	   ProgressDialog mProgress;
+
 public static Activity mainactivity;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
 		setContentView(R.layout.activity_main);
 		mainactivity = this;
 		myContext = getApplicationContext();
@@ -58,11 +64,15 @@ public static Activity mainactivity;
 		getDocument();
 		mDisplay = (TextView) findViewById(R.id.textView1);
 		name = (EditText) findViewById(R.id.editText);
+		destinatario = (EditText) findViewById(R.id.destinatario);
+		messaggio = (EditText) findViewById(R.id.messaggio);
 		register = (Button)   findViewById(R.id.button);
+		inviaMessaggio = (Button)   findViewById(R.id.invia);
+		inviaMessaggio.setOnClickListener(this);
 		regId = GCMRegistrar.getRegistrationId(this);
-
+//		mProgress = ProgressDialog.show(this, "Loading", "Please wait for a moment...");
 		register.setOnClickListener(this);
-
+		              
 		if (regId.equals("")) {
 			GCMRegistrar.register(this, SENDER_ID);
 		} else {
@@ -150,6 +160,8 @@ public static Activity mainactivity;
 		@Override
 		protected String doInBackground(String... params) {
 			try {				
+				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+				StrictMode.setThreadPolicy(policy);
 				HttpResponse response = null;
 				HttpParams httpParameters = new BasicHttpParams();
 				HttpClient client = new DefaultHttpClient(httpParameters);
@@ -196,19 +208,17 @@ public static Activity mainactivity;
 
 		@Override
 		protected String doInBackground(String... params) {
-			try {
+			try {				
 				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 				StrictMode.setThreadPolicy(policy);
 				HttpResponse response = null;
 				HttpParams httpParameters = new BasicHttpParams();
-				System.out.println("sn  qui");
 				HttpClient client = new DefaultHttpClient(httpParameters);
-//				String url="http://192.168.0.2:80/AddKey.php?"+"&id="+params[0]+"&usr="+params[1];
-				String url="http://192.168.0.2:8080/war/P2pMessage.html?"+"&id="+params[0]+"&usr="+params[1];
+				String url="http://raelixx.ns0.it:80/won/addKey.php?&id="+params[0]+"&usr="+params[1];
 				Log.i("Send URL:", url);
-//				HttpGet request = new HttpGet(url);
-				HttpPost req = new HttpPost(url);
-				response = client.execute(req);
+				HttpGet request = new HttpGet(url);
+//				new sendIdOnOverServerd().doInBackground(regId);
+				response = client.execute(request);
 
 				BufferedReader rd = new BufferedReader(new InputStreamReader(
 						response.getEntity().getContent()));
@@ -216,7 +226,7 @@ public static Activity mainactivity;
 				String webServiceInfo = "";
 				while ((webServiceInfo = rd.readLine()) != null) {
 					Log.d("****Status Log***", "Webservice: " + webServiceInfo);
-
+					
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -232,15 +242,69 @@ public static Activity mainactivity;
 		}
 
 	}
+	
+	
+	public class sendMessage extends AsyncTask<String, Void, String> {
 
+		ProgressDialog pd = null;
+
+		@Override
+		protected void onPreExecute() {
+			pd = ProgressDialog.show(MainActivity.this, "Please wait",
+					"Loading please wait..", true);
+			pd.setCancelable(true);
+
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			try {				
+				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+				StrictMode.setThreadPolicy(policy);
+				HttpResponse response = null;
+				HttpParams httpParameters = new BasicHttpParams();
+				HttpClient client = new DefaultHttpClient(httpParameters);
+				String message = messaggio.getText().toString().replace(" ", "%20");
+				String url="http://raelixx.ns0.it:80/won/sendScript.php?&id="+destinatario.getText()+"&msg="+message;
+				Log.i("Send URL:", url);
+				HttpGet request = new HttpGet(url);
+//				new sendIdOnOverServerd().doInBackground(regId);
+				response = client.execute(request);
+
+				BufferedReader rd = new BufferedReader(new InputStreamReader(
+						response.getEntity().getContent()));
+
+				String webServiceInfo = "";
+				while ((webServiceInfo = rd.readLine()) != null) {
+					Log.d("****Status Log***", "Webservice: " + webServiceInfo);
+					
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			pd.dismiss();
+
+		}
+
+	}
+	
 	@Override
 	public void onClick(View arg0) {
+		if(arg0 == inviaMessaggio){
+			new sendMessage().doInBackground();
+		}
 		if(arg0 == register ){
 //			new sendIdOnOverServer().execute();
 		mDisplay.setText("RegId=" + regId);
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		new sendIdOnOverServerd().doInBackground(GCMIntentService.reg,"utentes");}
+		new sendIdOnOverServerd().doInBackground(GCMIntentService.reg,name.getText().toString());}
 
 		
 	}

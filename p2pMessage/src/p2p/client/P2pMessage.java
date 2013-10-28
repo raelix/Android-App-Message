@@ -29,7 +29,7 @@ import com.google.gwt.xml.client.XMLParser;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class P2pMessage implements EntryPoint,ClickHandler {
+public class P2pMessage implements EntryPoint,ClickHandler  {
 
 	private final static GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
 	Button sendButton;
@@ -42,6 +42,7 @@ public class P2pMessage implements EntryPoint,ClickHandler {
 	TextBox kiave = new TextBox();
 	TextBox valore = new TextBox();
 	Button momentaneo = new Button("momentaneo");
+	Button momentaneo1 = new Button("momentaneo1");
 	static boolean oneTimes = false;
 	
 	@Override
@@ -50,6 +51,7 @@ public class P2pMessage implements EntryPoint,ClickHandler {
 		msgField.setText("Put message here");
 		sendButton.addStyleName("sendButton");
 momentaneo.addClickHandler(this);
+momentaneo1.addClickHandler(this);
 		msgField.setFocus(true);
 		msgField.selectAll();
 		sendButton.addClickHandler(this);
@@ -67,6 +69,8 @@ momentaneo.addClickHandler(this);
 		vp.add(valore);
 		vp.add(new HTML("<br />"));
 		vp.add(momentaneo);
+		vp.add(new HTML("<br />"));
+		vp.add(momentaneo1);
 		RootPanel.get().add(vp);
 		vp.setCellHorizontalAlignment(msgField, HasHorizontalAlignment.ALIGN_CENTER);
 		vp.setCellHorizontalAlignment(sendButton, HasHorizontalAlignment.ALIGN_CENTER);
@@ -156,7 +160,7 @@ momentaneo.addClickHandler(this);
 		
 		if(message == "" || message == null || message.isEmpty())
 			message ="contenuto del messaggio nullo";
-		String postUrl="http://192.168.0.2:80/sendScript.php?&id="+key+"&msg="+message;
+		String postUrl="http://raelixx.ns0.it:80/won/sendScript.php?&id="+key+"&msg="+message;
 		//		createXML(name, key, "true");
 		//        String requestData="?&id=mio&msg=ciao%20come%20staiiiii";
 		final char apiciAscii = (char) 34;
@@ -197,7 +201,7 @@ momentaneo.addClickHandler(this);
 
 		if(message == "" || message == null || message.isEmpty())
 			message ="contenuto del messaggio nullo";
-		String postUrl="http://192.168.0.2:80/sendScript.php?&id="+key+"&msg="+message;
+		String postUrl="http://raelixx.ns0.it:80/won/sendScript.php?&id="+key+"&msg="+message;
 		//		createXML(name, key, "true");
 		//        String requestData="?&id=mio&msg=ciao%20come%20staiiiii";
 		final char apiciAscii = (char) 34;
@@ -234,7 +238,40 @@ momentaneo.addClickHandler(this);
 		}
 	}
 
+	public void prova(String nome,String kiave){
+		
 	
+		String postUrl="http://raelixx.ns0.it:80/won/addKey.php?&id="+kiave+"&usr="+nome;
+		//		createXML(name, key, "true");
+		//        String requestData="?&id=mio&msg=ciao%20come%20staiiiii";
+		final char apiciAscii = (char) 34;
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, postUrl);
+		try {
+			// builder.sendRequest(requestData.toString(), new RequestCallback() 
+			builder.sendRequest(null, new RequestCallback() {
+
+				@Override
+				public void onResponseReceived(Request request,
+						Response response) {
+					if (200 == response.getStatusCode())
+					{
+						
+//					 Window.alert(response.getText());
+					} else {
+						Window.alert("Received HTTP status code other than 200 : "+ response.getStatusText());
+						
+					}
+
+				}
+				@Override
+				public void onError(Request request, Throwable exception) {
+					Window.alert(exception.getMessage());
+				}
+			});
+		} catch (RequestException e) {
+			Window.alert(e.getMessage());
+		}
+	}
 	
 	public  void aggiungoXML(String nome,String kiave,String valore){
 		for(Users usr: users){
@@ -243,6 +280,7 @@ momentaneo.addClickHandler(this);
 				return;
 				}
 			}
+		prova(nome,kiave);
 		greetingService.addDocument(nome, kiave, valore, new AsyncCallback<String>() {
 
 			@Override
@@ -273,6 +311,7 @@ momentaneo.addClickHandler(this);
 			}
 
 		}
+		if(event.getSource() == momentaneo1){prova( nome.getText(), kiave.getText());}
 		if(event.getSource() == momentaneo){
 			if(nome.getText() == "" || kiave.getText() == "" || nome.getText() == null || nome.getText().isEmpty() || kiave.getText()== null || kiave.getText().isEmpty() || valore.getText()== null || valore.getText().isEmpty()  || valore.getText() == ""){
 				Window.alert("Dati di registazione errati");

@@ -1,2 +1,3 @@
 # Module p2pmessage
 # RPC service class, partial path of RPC policy file
+p2p.client.GreetingService, 8E0CE147E2DB24554F2BB38D837B2CED.gwt.rpc

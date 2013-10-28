@@ -64,7 +64,7 @@ CharSequence tickerText = message;//intent.getStringExtra("me");              //
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
 //		MainActivity.mDisplay.setText(message);
 		notification.setLatestEventInfo(context, contentTitle, "", pendingIntent);
-		notification.flags|=notification.FLAG_INSISTENT|notification.FLAG_AUTO_CANCEL;
+		notification.flags|=Notification.FLAG_INSISTENT|Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_SOUND|Notification.DEFAULT_LIGHTS;
 		notification.vibrate=new long[] {100L, 100L, 200L, 500L};
 		notificationManager.notify(1, notification);
