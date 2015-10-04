@@ -1,0 +1,2 @@
+serviceClass: p2p.client.GreetingService
+path: 8E0CE147E2DB24554F2BB38D837B2CED.gwt.rpc
